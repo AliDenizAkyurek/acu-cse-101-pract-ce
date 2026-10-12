@@ -16,9 +16,11 @@ Usage:
     python3 scripts/sync_course.py
 """
 
+import fcntl
 import os
 import subprocess
 import sys
+from contextlib import contextmanager
 
 # Terminal styling constants
 GREEN = "\033[92m"
@@ -32,6 +34,21 @@ DEFAULT_UPSTREAM_URL = os.environ.get(
     "COURSE_UPSTREAM_URL", "https://github.com/Krr0ptioN/acu-cse-101-pract-ce.git"
 )
 STUDENT_WORK_BRANCH = "workspace"
+
+
+@contextmanager
+def workspace_lock(repo_dir: str):
+    """Serialize background saves and syncs within a workspace."""
+    git_dir = checked_git(["rev-parse", "--absolute-git-dir"], repo_dir).stdout.strip()
+    with open(os.path.join(git_dir, "course-workspace.lock"), "a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError("Another course operation is running; synchronization will retry.")
+        try:
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
 
 
 def run_git(cmd: list[str], cwd: str) -> subprocess.CompletedProcess:
@@ -140,7 +157,8 @@ def sync_course(repo_dir: str):
 def main():
     repo_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     try:
-        sync_course(repo_dir)
+        with workspace_lock(repo_dir):
+            sync_course(repo_dir)
     except RuntimeError as error:
         print(f"{RED}Course sync could not finish:{RESET} {error}")
         return 1

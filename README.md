@@ -53,12 +53,17 @@ Exercises are released progressively week by week. Each week's challenge folder 
 
 ---
 
-## 🔄 Keeping Your Workspace Synced (Conflict-Free)
+## 🔄 Automatic Course Updates
 
-When course instructors publish a new weekly challenge, sync it into your workspace with zero merge conflicts:
+Codespaces automatically check for new course materials at startup and every five
+minutes while running. Published weeks appear in the workspace without student
+action. The background watcher saves exercise changes before syncing, keeps
+student answers when updates overlap, and backs up the working branch to the
+student fork. Temporary network or backup failures are logged and retried.
 
-1. Open the **`$(checklist) Course Tasks`** menu on the left side of the bottom status bar.
-2. Choose **`Sync Course`**.
-   *(Alternatively, run `python3 scripts/sync_course.py` in the terminal).*
+The **Sync Course** action in **Course Tasks** is also available for an immediate
+check. Instructor diagnostics are recorded in `.git/auto_commit.log`.
 
-This preserves your Week 1 work on `workspace` and adds newly published weeks there. A GitHub fork or an already-running Codespace does not update by itself. If a sync changes the devcontainer configuration, use **Codespaces: Rebuild Container** after the sync to apply the container update.
+Existing Codespaces that still run the old save-only watcher require a one-time
+instructor-managed rollout of the updated scripts. Publishing to the course
+repository alone cannot replace a process already running in a student Codespace.

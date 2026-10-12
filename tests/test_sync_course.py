@@ -35,6 +35,7 @@ def repos(tmp_path, monkeypatch):
     git(student, "remote", "add", "upstream", str(course))
     git(student, "config", "remote.upstream.fetch", "+refs/heads/workspace:refs/remotes/upstream/workspace")
     monkeypatch.setattr(sync_course, "DEFAULT_UPSTREAM_URL", str(course))
+    monkeypatch.setenv("COURSE_UPSTREAM_URL", str(course))
     return course, student, fork
 
 
@@ -80,3 +81,40 @@ def test_failed_backup_is_reported_after_local_update(repos):
     with pytest.raises(RuntimeError):
         sync_course.sync_course(str(student))
     assert (student / "exercises/week_02/challenge.py").is_file()
+
+
+def test_background_watcher_delivers_week_without_student_action(repos):
+    import shutil
+
+    from scripts import auto_commit_daemon
+
+    course, student, _ = repos
+    publish(course)
+    scripts_dir = student / "scripts"
+    scripts_dir.mkdir()
+    shutil.copyfile(sync_course.__file__, scripts_dir / "sync_course.py")
+    assert auto_commit_daemon.synchronize_course(str(student))
+    assert (student / "exercises/week_02/challenge.py").is_file()
+
+
+def test_watcher_syncs_at_startup_and_retries(monkeypatch, tmp_path):
+    from scripts import auto_commit_daemon as daemon
+
+    attempts = []
+    monkeypatch.setattr(daemon, "is_git_repo", lambda repo: True)
+    monkeypatch.setattr(daemon, "get_git_status", lambda repo: [])
+    monkeypatch.setattr(daemon, "log_message", lambda *args: None)
+    monkeypatch.setattr(daemon, "synchronize_course", lambda *args: attempts.append(args) or False)
+    times = iter([0, 0, 301, 301])
+    monkeypatch.setattr(daemon.time, "monotonic", lambda: next(times))
+    sleeps = []
+
+    def sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) == 2:
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(daemon.time, "sleep", sleep)
+    with pytest.raises(SystemExit):
+        daemon.watch_workspace(str(tmp_path), False)
+    assert len(attempts) == 2
