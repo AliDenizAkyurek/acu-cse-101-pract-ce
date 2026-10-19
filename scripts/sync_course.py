@@ -165,6 +165,20 @@ def sync_course(repo_dir: str):
     checked_git(["push", "origin", f"HEAD:refs/heads/{curr_branch}"], repo_dir)
     print("✅ Fork synchronized.\n")
 
+    # First sync also activates the recurring workflow in the student's fork.
+    # Load the newly synced helper from disk, even in an older watcher process.
+    helper = os.path.join(repo_dir, "scripts", "enable_fork_sync.py")
+    if os.path.isfile(helper):
+        setup = subprocess.run(
+            [sys.executable, helper], cwd=repo_dir, capture_output=True, text=True, check=False
+        )
+        if setup.returncode:
+            raise RuntimeError(
+                "Course files were synced, but automatic Monday updates could not be enabled: "
+                + (setup.stderr.strip() or setup.stdout.strip())
+            )
+        print("📅 Automatic updates enabled: Mondays at 14:30 Istanbul time.")
+
 
 def main():
     repo_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

@@ -71,7 +71,7 @@ repository alone cannot replace a process already running in a student Codespace
 ## Instructor automation and student submissions
 
 The **Sync course and prepare student branches** GitHub Action runs on pushes to
-course `main`, hourly, and by manual dispatch. It creates a persistent branch
+course `main`, every Monday at **14:30 Istanbul time** (11:30 UTC), and by manual dispatch. It creates a persistent branch
 named after each fork owner's GitHub username. Existing student branches are
 never reset. It also redirects older `submit/week_*` PRs from `main` to the
 student's username branch.
@@ -99,10 +99,18 @@ student branches and never executes student code during synchronization.
 
 Without the secret or fork write access, course username branches are still
 provisioned, but fork sync is reported as **BLOCKED** in the workflow summary.
-The workflow can also run inside a fork using that fork's own `GITHUB_TOKEN`;
-GitHub disables scheduled workflows in public forks by default, so that route
-requires enabling Actions in each fork. Existing forks do not acquire new
-workflow files until a permitted sync or update installs them.
+After students bring in this update and run **Sync Course** once, the sync tool
+also updates their fork's `main` and `workspace`, enables GitHub Actions when
+needed, and activates the scheduled workflow using their existing GitHub login.
+Each fork then updates itself every **Monday at 14:30 Istanbul time** using its
+own `GITHUB_TOKEN`. Students do not need a shared instructor token or recurring
+manual repository syncs. If GitHub refuses the initial activation because the
+login lacks permissions, the tool reports that setup failed; this must be
+resolved once before automatic updates can run.
+
+GitHub can delay scheduled jobs during service load and disables inactive public
+repository schedules after 60 days. The scheduled workflow runs from the fork's
+default branch, which is why the first setup updates `main` as well as `workspace`.
 
 Remote branch updates do not change files in a running Codespace. The course's
 background watcher fetches updates every five minutes once its updated version
