@@ -85,11 +85,18 @@ may prevent posting a PR comment; they do not prevent grading.
 
 ### Automatic fork synchronization
 
-In the course repository, configure the `COURSE_SYNC_TOKEN` Actions secret with
-a credential that has write access to **each target student fork**. The account
-behind that credential must already be an authorized collaborator on those
-forks, with Contents and Workflows write permissions. A token cannot grant access
-its owner does not have. Do not copy a developer token into the repository.
+Each fork's scheduled workflow uses GitHub's built-in `GITHUB_TOKEN` with
+`contents: write` to update **its own** `main` and `workspace`. Students do not
+configure tokens or secrets. The sync tool attempts an atomic Git push; a real
+push rejection fails the run instead of being hidden behind a success message.
+Repository metadata permission flags are not used to reject installation tokens.
+
+The course repository's workflow provisions username branches and routes PRs.
+It delegates normal fork updates to the workflow running inside each fork, since
+its own token cannot write other repositories. For instructor-managed deployments
+only, an optional `COURSE_SYNC_TOKEN` can authorize central writes to forks that
+have already granted that credential access. That is not required for student
+fork workflows.
 
 The workflow merges course `main` into each fork's `main` and `workspace`,
 preferring existing student content when edits overlap. New files and weeks are
@@ -97,8 +104,6 @@ added. Both branches are pushed atomically; concurrent pushes or unresolved
 conflicts fail safely and are retried on the next run. It never force-pushes
 student branches and never executes student code during synchronization.
 
-Without the secret or fork write access, course username branches are still
-provisioned, but fork sync is reported as **BLOCKED** in the workflow summary.
 After students bring in this update and run **Sync Course** once, the sync tool
 also updates their fork's `main` and `workspace`, enables GitHub Actions when
 needed, and activates the scheduled workflow using their existing GitHub login.

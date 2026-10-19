@@ -145,14 +145,12 @@ def synchronize(api, repository, course=COURSE_REPOSITORY, fork_api=None, branch
                 ensure_student_branch(api, course, fork["owner"]["login"])
             elif fork.get("parent", {}).get("full_name", "").lower() != course.lower():
                 raise ValueError("This repository is not a direct fork of the course repository.")
-            if branches_only:
-                results.append((name, "student branch ready"))
+            if branches_only or (central and fork_api is None):
+                results.append((name, "student branch ready; automatic updates run in the fork's own workflow"))
                 continue
-            access_api = fork_api or api
-            details = access_api.request(f"repos/{name}")
-            if not details.get("permissions", {}).get("push"):
-                results.append((name, "BLOCKED: sync credential has no write access to this fork"))
-                continue
+            # GITHUB_TOKEN is an installation token, not a user token. The
+            # repository metadata permission flags are not an authorization
+            # check for that token. Let the actual atomic Git push decide.
             with tempfile.TemporaryDirectory(prefix="course-fork-sync-") as directory:
                 sync_branches(directory, f"https://github.com/{course}.git", f"https://github.com/{name}.git")
             results.append((name, "main and workspace synchronized"))
@@ -182,6 +180,10 @@ def main():
         route_submission(api, args.repository, event["pull_request"])
         return 0
     fork_token = os.environ.get("COURSE_SYNC_TOKEN")
+    if args.repository.lower() != COURSE_REPOSITORY.lower():
+        # Forks always use their own built-in GITHUB_TOKEN, never a student secret.
+        fork_token = None
+        os.environ.pop("COURSE_SYNC_TOKEN", None)
     results = synchronize(api, args.repository, fork_api=GitHub(fork_token) if fork_token else None,
                           branches_only=args.branches_only)
     report = "## Course synchronization\n\n" + "\n".join(f"- {repo}: {status}" for repo, status in results) + "\n"
