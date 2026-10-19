@@ -144,6 +144,18 @@ def sync_course(repo_dir: str):
             detail += "\nPlease ask your TA to help resolve the merge state."
         raise RuntimeError(detail)
 
+    # The scheduled action may have advanced the fork while this Codespace ran.
+    # Incorporate that history before backing up, without dropping local answers.
+    checked_git(["fetch", "origin", "+refs/heads/*:refs/remotes/origin/*"], repo_dir)
+    remote_ref = f"refs/remotes/origin/{curr_branch}"
+    if run_git(["show-ref", "--verify", "--quiet", remote_ref], repo_dir).returncode == 0:
+        remote_merge = run_git(
+            ["merge", "-X", "ours", remote_ref, "-m", "Sync fork workspace history"], repo_dir
+        )
+        if remote_merge.returncode != 0:
+            run_git(["merge", "--abort"], repo_dir)
+            raise RuntimeError(remote_merge.stderr.strip() or remote_merge.stdout.strip())
+
     print(f"\n{GREEN}{BOLD}🎉 Your local workspace is fully up to date.{RESET}")
     print(f"Newly published challenges are available on '{curr_branch}'.")
 

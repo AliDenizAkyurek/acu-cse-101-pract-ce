@@ -67,3 +67,44 @@ check. Instructor diagnostics are recorded in `.git/auto_commit.log`.
 Existing Codespaces that still run the old save-only watcher require a one-time
 instructor-managed rollout of the updated scripts. Publishing to the course
 repository alone cannot replace a process already running in a student Codespace.
+
+## Instructor automation and student submissions
+
+The **Sync course and prepare student branches** GitHub Action runs on pushes to
+course `main`, hourly, and by manual dispatch. It creates a persistent branch
+named after each fork owner's GitHub username. Existing student branches are
+never reset. It also redirects older `submit/week_*` PRs from `main` to the
+student's username branch.
+
+Submissions contain only the selected week's exercise folder. The Submit action
+opens a PR from `student:submit/week_03_functions` into
+`Krr0ptioN/acu-cse-101-pract-ce:student`. Instructor merges retain each student's
+work on that branch. Automated grading uses the published course tests and the
+bundled TA action, with results in the Actions job summary. Read-only fork tokens
+may prevent posting a PR comment; they do not prevent grading.
+
+### Automatic fork synchronization
+
+In the course repository, configure the `COURSE_SYNC_TOKEN` Actions secret with
+a credential that has write access to **each target student fork**. The account
+behind that credential must already be an authorized collaborator on those
+forks, with Contents and Workflows write permissions. A token cannot grant access
+its owner does not have. Do not copy a developer token into the repository.
+
+The workflow merges course `main` into each fork's `main` and `workspace`,
+preferring existing student content when edits overlap. New files and weeks are
+added. Both branches are pushed atomically; concurrent pushes or unresolved
+conflicts fail safely and are retried on the next run. It never force-pushes
+student branches and never executes student code during synchronization.
+
+Without the secret or fork write access, course username branches are still
+provisioned, but fork sync is reported as **BLOCKED** in the workflow summary.
+The workflow can also run inside a fork using that fork's own `GITHUB_TOKEN`;
+GitHub disables scheduled workflows in public forks by default, so that route
+requires enabling Actions in each fork. Existing forks do not acquire new
+workflow files until a permitted sync or update installs them.
+
+Remote branch updates do not change files in a running Codespace. The course's
+background watcher fetches updates every five minutes once its updated version
+has been installed. Older save-only watchers still need instructor-managed
+installation; a GitHub Action cannot replace a running process in a Codespace.
