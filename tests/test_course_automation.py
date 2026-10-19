@@ -73,6 +73,8 @@ class FakeGitHub:
             return {"parent": {"full_name": "teacher/course"}}
         if "/pulls/" in path:
             return {}
+        if path.endswith("/dispatches"):
+            return {}
         raise AssertionError(path)
 
 
@@ -98,7 +100,8 @@ def submission():
 def test_existing_main_pr_is_routed_to_username_branch():
     api = FakeGitHub()
     assert automation.route_submission(api, "teacher/course", submission())
-    assert api.calls[-1] == ("repos/teacher/course/pulls/3", "PATCH", {"base": "ada"})
+    assert ("repos/teacher/course/pulls/3", "PATCH", {"base": "ada"}) in api.calls
+    assert api.calls[-1][2] == {"ref": "main", "inputs": {"pull-request-number": "3"}}
 
 
 def test_unrelated_author_cannot_route_another_students_pr():

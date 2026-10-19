@@ -33,7 +33,8 @@ class GitHub:
             },
         )
         with urlopen(request, timeout=60) as response:
-            return json.load(response)
+            body = response.read()
+            return json.loads(body) if body else {}
 
     def pages(self, path):
         separator = "&" if "?" in path else "?"
@@ -108,7 +109,7 @@ def sync_branches(repo, course_url, fork_url):
     git(repo, "push", "--atomic", "origin", "main:refs/heads/main", "workspace:refs/heads/workspace")
 
 
-def route_submission(api, course, pr):
+def route_submission(api, course, pr, grade=True):
     """Route metadata only; no PR checkout or student code execution."""
     head_repo = pr["head"].get("repo")
     if not head_repo or not head_repo.get("fork") or not pr["head"]["ref"].startswith("submit/"):
@@ -123,6 +124,12 @@ def route_submission(api, course, pr):
     ensure_student_branch(api, course, login)
     if pr["base"]["ref"] != login:
         api.request(f"repos/{course}/pulls/" + str(pr["number"]), "PATCH", {"base": login})
+    # Older fork branches still contain the obsolete workflow. Dispatch trusted
+    # main explicitly, instead of depending on the workflow in the student's PR.
+    if grade:
+        api.request(f"repos/{course}/actions/workflows/ta-grading.yml/dispatches", "POST", {
+            "ref": "main", "inputs": {"pull-request-number": str(pr["number"])},
+        })
     return True
 
 
@@ -154,7 +161,8 @@ def synchronize(api, repository, course=COURSE_REPOSITORY, fork_api=None, branch
     if central:
         for pr in api.pages(f"repos/{course}/pulls?state=open"):
             try:
-                route_submission(api, course, pr)
+                owner = ((pr["head"].get("repo") or {}).get("owner") or {}).get("login")
+                route_submission(api, course, pr, grade=pr["base"]["ref"] != owner)
             except (HTTPError, ValueError) as error:
                 results.append(("PR #" + str(pr["number"]), f"FAILED: {error}"))
     return results
