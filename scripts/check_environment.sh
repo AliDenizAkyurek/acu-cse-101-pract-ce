@@ -50,6 +50,23 @@ for name, minimum in (("pytest", (8, 0)), ("ruff", (0, 5))):
     fi
 fi
 
+# Ensure GitHub CLI is available for seamless submissions
+if command -v gh >/dev/null 2>&1; then
+    echo "OK: gh ($(gh --version 2>/dev/null | head -n 1 || echo available))"
+elif [[ "$MODE" == --repair || "$MODE" == --packages ]]; then
+    if command -v apt-get >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
+        echo "Installing GitHub CLI (gh)..."
+        (
+            export DEBIAN_FRONTEND=noninteractive
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg 2>/dev/null
+            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg 2>/dev/null
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null 2>&1
+            sudo apt-get update -qq >/dev/null 2>&1
+            sudo apt-get install -y -qq gh >/dev/null 2>&1
+        ) || true
+    fi
+fi
+
 # Container creation precedes the editor connection; extensions are checked on attach.
 if [[ "$MODE" != --packages ]]; then
     if ! command -v code >/dev/null 2>&1; then

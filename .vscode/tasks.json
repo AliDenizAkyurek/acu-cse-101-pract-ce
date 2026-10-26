@@ -19,7 +19,8 @@
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
-        "panel": "dedicated"
+        "panel": "dedicated",
+        "clear": true
       },
       "group": {
         "kind": "test",
@@ -34,7 +35,8 @@
       "presentation": {
         "reveal": "always",
         "panel": "new",
-        "focus": true
+        "focus": true,
+        "clear": true
       },
       "group": {
         "kind": "build",
@@ -55,6 +57,16 @@
       "label": "Play",
       "type": "shell",
       "command": "python3 \"${file}\"",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Open Interactive Slides",
+      "type": "shell",
+      "command": "python3 -m http.server 8000 --directory docs",
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
