@@ -14,10 +14,11 @@ use **Play** or the Python Run button to try each function.
 
 ## Challenges
 
-Complete the three empty functions in [`challenge.py`](challenge.py):
+Complete the four empty functions in [`challenge.py`](challenge.py):
 
-- Classify a temperature using conditions.
-- Count even positive integers using a loop.
+- Classify a temperature using conditions (`if` / `elif` / `else`).
+- Count even positive integers using a `for` loop.
+- Count how many times a number can be halved until reaching 1 using a `while` loop.
 - Calculate a power of two using recursion.
 
 Return results and keep function names and parameters unchanged. Tests check

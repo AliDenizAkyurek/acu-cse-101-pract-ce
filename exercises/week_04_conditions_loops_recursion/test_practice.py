@@ -59,3 +59,9 @@ def test_comparisons(capsys):
 def test_break_and_continue(capsys):
     practice.loop_control_examples()
     assert capsys.readouterr().out.splitlines() == ["1", "3"]
+
+
+@pytest.mark.parametrize("n, expected", [(0, []), (-2, []), (1, [1]), (3, [3, 2, 1]), (5, [5, 4, 3, 2, 1])])
+def test_countdown(n, expected):
+    assert practice.countdown(n) == expected
+

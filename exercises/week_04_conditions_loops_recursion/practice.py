@@ -60,13 +60,19 @@ def sum_with_while(n):
     pass
 
 
-# 8. Loop through 1–5: skip 2, stop at 4, print the remaining visited numbers.
+# 8. while loop with condition: count down from n to 1 by returning a list of numbers.
+# For n <= 0, return [].
+def countdown(n):
+    pass
+
+
+# 9. Loop through 1–5: skip 2, stop at 4, print the remaining visited numbers.
 # Use continue and break.
 def loop_control_examples():
     pass
 
 
-# 9. Recursion: return the sum from 1 through n; for n = 0, return 0.
+# 10. Recursion: return the sum from 1 through n; for n = 0, return 0.
 # Discuss the base case and progress toward it.
 def sum_with_recursion(n):
     pass

@@ -1,8 +1,8 @@
-"""Result checks for the three beginner challenges; approach is reviewed by the TA."""
+"""Result checks for the beginner challenges; approach is reviewed by the TA."""
 
 import pytest
 
-from .challenge import count_evens, describe_temperature, power_of_two
+from .challenge import count_evens, describe_temperature, halve_until_one, power_of_two
 
 
 @pytest.mark.parametrize("temperature, expected", [
@@ -18,6 +18,12 @@ def test_count_evens(n, expected):
     assert count_evens(n) == expected, "Count matching positive numbers, including n if it is even."
 
 
+@pytest.mark.parametrize("n, expected", [(1, 0), (2, 1), (3, 1), (5, 2), (8, 3), (16, 4), (100, 6)])
+def test_halve_until_one(n, expected):
+    assert halve_until_one(n) == expected, "Count how many times n is integer-divided by 2 until it reaches 1."
+
+
 @pytest.mark.parametrize("n, expected", [(0, 1), (1, 2), (2, 4), (3, 8), (5, 32), (8, 256)])
 def test_power_of_two(n, expected):
     assert power_of_two(n) == expected, "Start with 1 at n = 0; double for each next power."
+
