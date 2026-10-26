@@ -103,8 +103,7 @@ Exercises are released progressively week by week. Each week's challenge folder 
 | **01** | [`exercises/week_01_intro/`](exercises/week_01_intro/) | Ch. 1 & 2 | The Way of the Program & Basic Arithmetic | **Released** |
 | **02** | `exercises/week_02_variables/` | Ch. 2 | Variables, Expressions and Statements | *Weekly Release* |
 | **03** | `exercises/week_03_functions/` | Ch. 3 | Functions, Parameters and Return Values | *Weekly Release* |
-| **04** | `exercises/week_04_conditionals_recursion/` | Ch. 5 | Conditionals, Booleans & Recursion | *Weekly Release* |
-| **05** | `exercises/week_05_iteration/` | Ch. 7 | Iteration, Loops, Newton's Square Root | *Weekly Release* |
+| **04–05** | [`exercises/week_04_conditions_loops_recursion/`](exercises/week_04_conditions_loops_recursion/) | Ch. 5 & 7 | Conditions, Boolean Expressions, for / while Loops & Simple Recursion | **Released together** |
 | **06** | `exercises/week_06_strings_lists/` | Ch. 8 & 10 | Strings, Indexing, Slicing & Lists | *Weekly Release* |
 | **07** | *Midterm I Review* | Ch. 1–10 | Comprehensive Practice Review | *In Class* |
 | **08** | `exercises/week_08_dictionaries_tuples/` | Ch. 11 & 12 | Dictionaries and Tuples | *Weekly Release* |
