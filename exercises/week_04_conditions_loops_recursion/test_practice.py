@@ -1,4 +1,4 @@
-"""Check the worked examples, including boundaries and empty loops."""
+"""Check the in-class exercises after completion, including boundaries and empty loops."""
 
 import pytest
 
