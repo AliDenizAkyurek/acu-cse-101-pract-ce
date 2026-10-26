@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
 
 echo "============================================="
 echo "  Setting up ACU CSE 101 Environment..."
 echo "============================================="
 
-# Upgrade pip and install course packages
-pip install --upgrade pip
-pip install -r requirements.txt -r requirements-dev.txt
+# Install with the same interpreter used by the editor. Fail visibly on errors.
+bash "$ROOT/scripts/check_environment.sh" --packages
 
 # Configure safe git defaults for students
 git config --global pull.rebase false
@@ -23,4 +24,4 @@ else
     git checkout -b workspace
 fi
 
-echo "✅ ACU CSE 101 Environment Ready!"
+echo "✅ Course packages ready. Editor extensions will be checked when VS Code connects."

@@ -2,6 +2,17 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Check Environment",
+      "type": "process",
+      "command": "bash",
+      "args": ["${workspaceFolder}/scripts/check_environment.sh", "--check"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
       "label": "Run Tests",
       "type": "shell",
       "command": "python3 scripts/submit.py --test-only",
